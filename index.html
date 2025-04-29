@@ -128,7 +128,7 @@
       if (!valor) return alert("Ingrese un valor válido");
       loader.style.display = "block";
 
-      const url = `http://172.21.30.10:9000/wa_sigcrm/siniestro?tipoBusqueda=${tipo}&valor=${encodeURIComponent(valor)}`;
+      const url = `https://mafperu.com.pe/wa_sigcrm/siniestro?tipoBusqueda=${tipo}&valor=${encodeURIComponent(valor)}`;
 
       try {
         const response = await fetch(url);
@@ -171,7 +171,7 @@
     function descargarPoliza() {
       const motor = document.getElementById("motorInput").value.trim();
       if (!motor) return alert("Ingrese un número de motor válido");
-      const url = `http://172.21.30.10:9000/wa_sigcrm/pdf-poliza?numeroMotor=${encodeURIComponent(motor)}&tipoDocumento=003`;
+      const url = `https://mafperu.com.pe/wa_sigcrm/pdf-poliza?numeroMotor=${encodeURIComponent(motor)}&tipoDocumento=003`;
       window.open(url, '_blank');
     }
   </script>
