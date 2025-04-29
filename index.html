@@ -14,6 +14,13 @@
       transform: translateY(-2px);
       transition: 0.2s ease;
     }
+    .card-header-dark {
+      background-color: #a7a7a7;
+      color: #fff;
+      padding: 14px 0 14px 14px;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -36,7 +43,7 @@
       <div class="col-md-4">
         <div class="card text-center p-4 border-2 border-secondary card-hover" onclick="mostrarVista('poliza')" style="cursor: pointer;">
           <div class="mb-3">
-            <img src="https://i.imgur.com/lDgQvqn.png" alt="Póliza" width="60">
+            <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Póliza" width="60">
           </div>
           <h4 class="fw-bold text-dark">Descargar póliza</h4>
           <p class="text-muted">Obtén la póliza en formato PDF usando el número de motor.</p>
@@ -47,28 +54,32 @@
 
     <!-- Vista consulta siniestro -->
     <div id="vistaConsulta" style="display:none;">
-      <h2 class="text-center fw-bold mb-4" style="color: var(--maf-rojo);">Consulta de Siniestros</h2>
       <div class="mb-3 text-center">
-        <button class="btn btn-outline-secondary btn-sm" onclick="mostrarVista('inicio')">⬅ Volver</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="mostrarVista('inicio')"><img src="https://i.imgur.com/xH0TiUn.png"></button>
       </div>
       <div class="row justify-content-center mb-4">
         <div class="col-md-6">
-          <div class="card shadow-sm p-4">
-            <div class="mb-3">
-              <label for="tipoBusqueda" class="form-label fw-semibold">Tipo de búsqueda</label>
-              <select id="tipoBusqueda" class="form-select">
-                <option value="3" selected>Placa</option>
-                <option value="1">Motor</option>
-                <option value="2">Chasis</option>
-              </select>
+            <div class="card shadow-sm">
+              <div class="card-header-dark">
+                <h5 class="mb-2 fw-bold">Búsqueda de Siniestros</h5>
+              </div>
+              <div class="card-body p-4">
+                <div class="mb-3">
+                  <label for="tipoBusqueda" class="form-label fw-semibold">Tipo de búsqueda</label>
+                  <select id="tipoBusqueda" class="form-select">
+                    <option value="3" selected>Placa</option>
+                    <option value="1">Motor</option>
+                    <option value="2">Chasis</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="valorBusqueda" class="form-label fw-semibold">Valor</label>
+                  <input type="text" id="valorBusqueda" class="form-control" placeholder="Ej. ABC123 o CFZT71430">
+                </div>
+                <button onclick="consultarSiniestros()" class="btn btn-danger w-100">Consultar</button>
+              </div>
             </div>
-            <div class="mb-3">
-              <label for="valorBusqueda" class="form-label fw-semibold">Valor</label>
-              <input type="text" id="valorBusqueda" class="form-control" placeholder="Ej. ABC123 o CFZT71430">
-            </div>
-            <button onclick="consultarSiniestros()" class="btn btn-danger w-100">Consultar</button>
           </div>
-        </div>
       </div>
       <div id="loader" class="text-center text-danger fw-semibold mb-4" style="display:none;">Cargando resultados...</div>
       <div id="resultado" class="accordion"></div>
@@ -76,20 +87,24 @@
 
     <!-- Vista descarga póliza -->
     <div id="vistaPoliza" style="display:none;">
-      <h2 class="text-center fw-bold mb-4" style="color: var(--maf-rojo);">Descargar Póliza</h2>
       <div class="mb-3 text-center">
         <button class="btn btn-outline-secondary btn-sm" onclick="mostrarVista('inicio')">⬅ Volver</button>
       </div>
       <div class="row justify-content-center">
         <div class="col-md-6">
-          <div class="card shadow-sm p-4">
-            <div class="mb-3">
-              <label for="motorInput" class="form-label fw-semibold">Número de motor</label>
-              <input type="text" id="motorInput" class="form-control" placeholder="Ej. CFZT71430">
+            <div class="card shadow-sm">
+              <div class="card-header-dark">
+                <h5 class="mb-0 fw-bold">Descarga de Poliza</h5>
+              </div>
+              <div class="card-body p-4">
+                <div class="mb-3">
+                  <label for="motorInput" class="form-label fw-semibold">Número de motor</label>
+                  <input type="text" id="motorInput" class="form-control" placeholder="Ej. CFZT71430">
+                </div>
+                <button onclick="descargarPoliza()" class="btn btn-dark w-100">Descargar PDF</button>
+              </div>
             </div>
-            <button onclick="descargarPoliza()" class="btn btn-dark w-100">Descargar PDF</button>
           </div>
-        </div>
       </div>
     </div>
 
