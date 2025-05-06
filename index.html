@@ -97,7 +97,12 @@
         
         <!-- Contenedor de resultados (inicialmente oculto) -->
         <div id="resultsOuterContainer" class="col-md-7 results-container">
-          <div id="loader" class="text-center text-danger fw-semibold mb-4" style="display:none;">Cargando resultados...</div>
+          <div id="loader" class="text-center text-danger fw-semibold mb-4" style="display:none;">
+            <div class="spinner-border text-danger" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <div class="mt-2">Cargando resultados...</div>
+          </div>
           <div id="resultado" class="accordion"></div>
         </div>
       </div>
@@ -156,91 +161,88 @@
     }
 
     async function consultarSiniestros() {
-      const tipo = document.getElementById("tipoBusqueda").value;
-      const valor = document.getElementById("valorBusqueda").value.trim();
-      const loader = document.getElementById("loader");
-      const container = document.getElementById("resultado");
-      container.innerHTML = "";
-
-      if (!valor) return alert("Ingrese un valor válido");
-      loader.style.display = "block";
-
-      const url = `https://mafperu.com.pe/wa_sigcrm/siniestro?tipoBusqueda=${tipo}&valor=${encodeURIComponent(valor)}`;
-
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        loader.style.display = "none";
-
-        if (!data.siniestros || data.siniestros.length === 0) {
-          container.innerHTML = "<p class='text-center text-muted'>No se encontraron siniestros.</p>";
-          
-          // Mostrar contenedor de resultados manteniendo el formulario centrado
+        const tipo = document.getElementById("tipoBusqueda").value;
+        const valor = document.getElementById("valorBusqueda").value.trim();
+        const loader = document.getElementById("loader");
+        const container = document.getElementById("resultado");
+        container.innerHTML = "";
+      
+        if (!valor) return alert("Ingrese un valor válido");
+        loader.style.display = "block";
+      
+        const url = `https://mafperu.com.pe/wa_sigcrm/siniestro?tipoBusqueda=${tipo}&valor=${encodeURIComponent(valor)}`;
+      
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+      
+          if (!data.siniestros || data.siniestros.length === 0) {
+            container.innerHTML = "<p class='text-center text-muted'>No se encontraron siniestros.</p>";
+            document.getElementById("resultsOuterContainer").classList.add("results-visible");
+            return;
+          }
+      
+          const searchForm = document.getElementById("searchFormContainer");
+          searchForm.className = "col-md-5 search-container";
           document.getElementById("resultsOuterContainer").classList.add("results-visible");
-          return;
-        }
-
-        // Cambiar disposición a dos columnas
-        const searchForm = document.getElementById("searchFormContainer");
-        searchForm.className = "col-md-5 search-container";
-        
-        // Mostrar contenedor de resultados
-        document.getElementById("resultsOuterContainer").classList.add("results-visible");
-
-        data.siniestros.forEach((s, i) => {
+      
+          data.siniestros.forEach((s, i) => {
           const item = `
-          <div class="accordion-item mb-3">
-            <h2 class="accordion-header" id="heading${i}">
-              <button class="accordion-button collapsed bg-danger-subtle text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${i}" aria-expanded="false" aria-controls="collapse${i}">
-                Siniestro: \${s.numeroSiniestro} | <span class='badge bg-\${s.estadoSiniestro === 'CERRADO' ? 'danger' : 'success'}'>\${s.estadoSiniestro}</span> | Fecha: \${s.fechaOcurrencia}
-              </button>
-            </h2>
-            <div id="collapse${i}" class="accordion-collapse collapse" aria-labelledby="heading${i}" data-bs-parent="#resultado">
-              <div class="accordion-body">
-                <h6 class="fw-bold text-danger">SINIESTRO</h6>
-                <p><strong>Número:</strong> ${s.numeroSiniestro}</p>
-                <p><strong>Número Compañía:</strong> ${s.numeroSiniestroCompañia ?? 'N/A'}</p>
-                <p><strong>Ejecutivo:</strong> ${s.ejecutivoCompañia ?? 'N/A'}</p>
-                <p><strong>Fecha de Notificación:</strong> ${s.fechaNotificacionCompañia ?? 'N/A'}</p>
-                <p><strong>Estado:</strong> ${s.estadoSiniestro}</p>
-                <p><strong>Fecha de Ocurrencia:</strong> ${s.fechaOcurrencia}</p>
-                <p><strong>Causa:</strong> ${s.causa}</p>
-                <p><strong>Tipo de Pérdida:</strong> ${s.tipoPerdida}</p>
-        
-                <hr>
-                <h6 class="fw-bold text-danger">PÓLIZA</h6>
-                <p><strong>Número:</strong> ${s.poliza?.numeroPoliza ?? 'N/A'}</p>
-                <p><strong>Vigencia:</strong> ${s.poliza?.inicioVigencia ?? 'N/A'} al ${s.poliza?.finVigencia ?? 'N/A'}</p>
-                <p><strong>Asegurado:</strong> ${s.poliza?.asegurado ?? 'N/A'}</p>
-                <p><strong>Compañía:</strong> ${s.poliza?.compañia ?? 'N/A'}</p>
-                <p><strong>Moneda:</strong> ${s.poliza?.moneda ?? 'N/A'}</p>
-        
-                <hr>
-                <h6 class="fw-bold text-danger">VEHÍCULO</h6>
-                <p><strong>Placa:</strong> ${s.vehiculo?.placa ?? 'N/A'}</p>
-                <p><strong>Marca:</strong> ${s.vehiculo?.marca ?? 'N/A'}</p>
-                <p><strong>Modelo:</strong> ${s.vehiculo?.modelo ?? 'N/A'}</p>
-                <p><strong>Motor:</strong> ${s.vehiculo?.motor ?? 'N/A'}</p>
-                <p><strong>Año:</strong> ${s.vehiculo?.año ?? 'N/A'}</p>
-                <p><strong>Chasis:</strong> ${s.vehiculo?.chasis ?? 'N/A'}</p>
-        
-                <hr>
-                <h6 class="fw-bold text-danger">AJUSTE DEL SINIESTRO</h6>
-                <p><strong>Ingreso a Taller:</strong> ${s.ajusteSiniestro?.fechaIngresotaller ?? 'N/A'}</p>
-                <p><strong>Presupuesto Emitido:</strong> ${s.ajusteSiniestro?.fechaPresuspuesto ?? 'N/A'}</p>
-                <p><strong>Presupuesto Aprobado:</strong> ${s.ajusteSiniestro?.fechaAprobacionPresuspuesto ?? 'N/A'}</p>
-                <p><strong>Etapa:</strong> ${s.ajusteSiniestro?.estapaSiniestro ?? 'N/A'}</p>
-                <p><strong>Observación:</strong> ${s.ajusteSiniestro?.observacion ?? 'N/A'}</p>
+            <div class="accordion-item mb-3">
+              <h2 class="accordion-header" id="heading${i}">
+                <button class="accordion-button collapsed bg-danger-subtle text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${i}" aria-expanded="false" aria-controls="collapse${i}">
+                  Siniestro: ${s.numeroSiniestro} |
+                  <span class='badge bg-${s.estadoSiniestro === 'CERRADO' ? 'danger' : 'success'}'>${s.estadoSiniestro}</span> |
+                  Fecha: ${s.fechaOcurrencia}
+                </button>
+              </h2>
+              <div id="collapse${i}" class="accordion-collapse collapse" aria-labelledby="heading${i}" data-bs-parent="#resultado">
+                <div class="accordion-body">
+                  <h6 class="fw-bold text-danger">SINIESTRO</h6>
+                  <p><strong>Número:</strong> ${s.numeroSiniestro}</p>
+                  <p><strong>Número Compañía:</strong> ${s.numeroSiniestroCompañia ?? 'N/A'}</p>
+                  <p><strong>Ejecutivo:</strong> ${s.ejecutivoCompañia ?? 'N/A'}</p>
+                  <p><strong>Fecha de Notificación:</strong> ${s.fechaNotificacionCompañia ?? 'N/A'}</p>
+                  <p><strong>Estado:</strong> ${s.estadoSiniestro}</p>
+                  <p><strong>Fecha de Ocurrencia:</strong> ${s.fechaOcurrencia}</p>
+                  <p><strong>Causa:</strong> ${s.causa}</p>
+                  <p><strong>Tipo de Pérdida:</strong> ${s.tipoPerdida}</p>
+          
+                  <hr>
+                  <h6 class="fw-bold text-danger">PÓLIZA</h6>
+                  <p><strong>Número:</strong> ${s.poliza?.numeroPoliza ?? 'N/A'}</p>
+                  <p><strong>Vigencia:</strong> ${s.poliza?.inicioVigencia ?? 'N/A'} al ${s.poliza?.finVigencia ?? 'N/A'}</p>
+                  <p><strong>Asegurado:</strong> ${s.poliza?.asegurado ?? 'N/A'}</p>
+                  <p><strong>Compañía:</strong> ${s.poliza?.compañia ?? 'N/A'}</p>
+                  <p><strong>Moneda:</strong> ${s.poliza?.moneda ?? 'N/A'}</p>
+          
+                  <hr>
+                  <h6 class="fw-bold text-danger">VEHÍCULO</h6>
+                  <p><strong>Placa:</strong> ${s.vehiculo?.placa ?? 'N/A'}</p>
+                  <p><strong>Marca:</strong> ${s.vehiculo?.marca ?? 'N/A'}</p>
+                  <p><strong>Modelo:</strong> ${s.vehiculo?.modelo ?? 'N/A'}</p>
+                  <p><strong>Motor:</strong> ${s.vehiculo?.motor ?? 'N/A'}</p>
+                  <p><strong>Año:</strong> ${s.vehiculo?.año ?? 'N/A'}</p>
+                  <p><strong>Chasis:</strong> ${s.vehiculo?.chasis ?? 'N/A'}</p>
+          
+                  <hr>
+                  <h6 class="fw-bold text-danger">AJUSTE DEL SINIESTRO</h6>
+                  <p><strong>Ingreso a Taller:</strong> ${s.ajusteSiniestro?.fechaIngresotaller ?? 'N/A'}</p>
+                  <p><strong>Presupuesto Emitido:</strong> ${s.ajusteSiniestro?.fechaPresuspuesto ?? 'N/A'}</p>
+                  <p><strong>Presupuesto Aprobado:</strong> ${s.ajusteSiniestro?.fechaAprobacionPresuspuesto ?? 'N/A'}</p>
+                  <p><strong>Etapa:</strong> ${s.ajusteSiniestro?.estapaSiniestro ?? 'N/A'}</p>
+                  <p><strong>Observación:</strong> ${s.ajusteSiniestro?.observacion ?? 'N/A'}</p>
+                </div>
               </div>
-            </div>
-          </div>`;
+            </div>`;
           container.innerHTML += item;
         });
 
-      } catch (err) {
-        loader.style.display = "none";
+       } catch (err) {
         alert("Error al consultar siniestros. Verifique la red.");
-      }
+       } finally {
+        loader.style.display = "none"; // Siempre ocultar el loader
+       }
     }
 
     function descargarPoliza() {
