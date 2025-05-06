@@ -69,9 +69,9 @@
       <div class="mb-3 text-center">
         <button class="btn btn-outline-secondary btn-sm" onclick="mostrarVista('inicio')"><img style="width: 20px;" src="https://i.imgur.com/xH0TiUn.png"></button>
       </div>
-      
+
       <div class="row">
-        <!-- Formulario de búsqueda (inicialmente centrado) -->
+        <!-- Formulario de búsqueda -->
         <div id="searchFormContainer" class="col-md-8 mx-auto search-container">
           <div class="card shadow-sm">
             <div class="card-header-dark">
@@ -94,35 +94,38 @@
             </div>
           </div>
         </div>
-        
-        <!-- Contenedor de resultados (inicialmente oculto) -->
+
+        <!-- Resultados -->
         <div id="resultsOuterContainer" class="col-md-7 results-container">
-          <div id="loader" class="text-center text-danger fw-semibold mb-4" style="display:none;">Cargando resultados...</div>
+          <div id="loader" class="text-center text-danger fw-semibold mb-4" style="display:none;">
+            <div class="spinner-border text-danger" role="status"><span class="visually-hidden">Cargando...</span></div>
+            <div class="mt-2">Cargando resultados...</div>
+          </div>
           <div id="resultado" class="accordion"></div>
         </div>
       </div>
     </div>
 
-    <!-- Vista descarga póliza -->
+    <!-- Vista póliza -->
     <div id="vistaPoliza" style="display:none;">
       <div class="mb-3 text-center">
         <button class="btn btn-outline-secondary btn-sm" onclick="mostrarVista('inicio')"><img style="width: 20px;" src="https://i.imgur.com/xH0TiUn.png"></button>
       </div>
       <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow-sm">
-              <div class="card-header-dark">
-                <h5 class="mb-0 fw-bold">Descarga de Poliza</h5>
+          <div class="card shadow-sm">
+            <div class="card-header-dark">
+              <h5 class="mb-0 fw-bold">Descarga de Poliza</h5>
+            </div>
+            <div class="card-body p-4">
+              <div class="mb-3">
+                <label for="motorInput" class="form-label fw-semibold">Número de motor</label>
+                <input type="text" id="motorInput" class="form-control" placeholder="Ej. CFZT71430">
               </div>
-              <div class="card-body p-4">
-                <div class="mb-3">
-                  <label for="motorInput" class="form-label fw-semibold">Número de motor</label>
-                  <input type="text" id="motorInput" class="form-control" placeholder="Ej. CFZT71430">
-                </div>
-                <button onclick="descargarPoliza()" class="btn btn-dark w-100">Descargar PDF</button>
-              </div>
+              <button onclick="descargarPoliza()" class="btn btn-dark w-100">Descargar PDF</button>
             </div>
           </div>
+        </div>
       </div>
     </div>
 
@@ -134,24 +137,14 @@
       document.getElementById("vistaInicio").style.display = vista === 'inicio' ? 'flex' : 'none';
       document.getElementById("vistaConsulta").style.display = vista === 'consulta' ? 'block' : 'none';
       document.getElementById("vistaPoliza").style.display = vista === 'poliza' ? 'block' : 'none';
-      
-      // Restablecer la vista de resultados al volver a la pantalla de inicio
-      if (vista === 'inicio') {
-        resetResultsView();
-      }
+      if (vista === 'inicio') resetResultsView();
     }
-    
+
     function resetResultsView() {
       const searchForm = document.getElementById("searchFormContainer");
       const resultsContainer = document.getElementById("resultsOuterContainer");
-      
-      // Restablecer el formulario de búsqueda a su posición original
       searchForm.className = "col-md-8 mx-auto search-container";
-      
-      // Ocultar el contenedor de resultados
       resultsContainer.classList.remove("results-visible");
-      
-      // Limpiar los resultados
       document.getElementById("resultado").innerHTML = "";
     }
 
@@ -161,30 +154,26 @@
       const loader = document.getElementById("loader");
       const container = document.getElementById("resultado");
       container.innerHTML = "";
-
       if (!valor) return alert("Ingrese un valor válido");
       loader.style.display = "block";
 
       const url = `https://mafperu.com.pe/wa_sigcrm/siniestro?tipoBusqueda=${tipo}&valor=${encodeURIComponent(valor)}`;
+      console.log("🔍 Consultando:", url);
 
       try {
         const response = await fetch(url);
+        console.log("📦 Estado respuesta:", response.status);
         const data = await response.json();
-        loader.style.display = "none";
+        console.log("📊 Respuesta JSON:", data);
 
         if (!data.siniestros || data.siniestros.length === 0) {
+          console.warn("⚠️ No hay siniestros");
           container.innerHTML = "<p class='text-center text-muted'>No se encontraron siniestros.</p>";
-          
-          // Mostrar contenedor de resultados manteniendo el formulario centrado
           document.getElementById("resultsOuterContainer").classList.add("results-visible");
           return;
         }
 
-        // Cambiar disposición a dos columnas
-        const searchForm = document.getElementById("searchFormContainer");
-        searchForm.className = "col-md-5 search-container";
-        
-        // Mostrar contenedor de resultados
+        document.getElementById("searchFormContainer").className = "col-md-5 search-container";
         document.getElementById("resultsOuterContainer").classList.add("results-visible");
 
         data.siniestros.forEach((s, i) => {
@@ -200,7 +189,7 @@
                   <strong>Ejecutivo:</strong> ${s.ejecutivoCompañia ?? 'N/A'}<br>
                   <strong>Dirección:</strong> ${s.direccion ?? 'N/A'}<br>
                   <strong>Tipo Pérdida:</strong> ${s.tipoPerdida}<br>
-                  <strong>Vehículo:</strong> ${s.vehiculo?.marca} ${s.vehiculo?.modelo} (${s.vehiculo?.placa})<br>
+                  <strong>Vehículo:</strong> ${s.vehiculo?.marca ?? ''} ${s.vehiculo?.modelo ?? ''} (${s.vehiculo?.placa ?? 'N/A'})<br>
                   <strong>Póliza:</strong> ${s.poliza?.numeroPoliza ?? 'N/A'}<br>
                   <strong>Asegurado:</strong> ${s.poliza?.asegurado ?? 'N/A'}
                 </div>
@@ -210,8 +199,10 @@
         });
 
       } catch (err) {
-        loader.style.display = "none";
+        console.error("❌ Error al obtener siniestros:", err);
         alert("Error al consultar siniestros. Verifique la red.");
+      } finally {
+        loader.style.display = "none";
       }
     }
 
